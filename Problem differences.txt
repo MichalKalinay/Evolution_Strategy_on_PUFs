@@ -1,20 +1,20 @@
 Differences between mockup and real problem (assumption here is an arbiter PUFs as I understood it during the first meeting):
 
 vars:
-	Genome - List[Tuple[float]] a genome will represent the PUF. Each tuple will be a gate and the floats represent the time it takes for electricity to go though either cable
-	Population - Equivalent to mockup
+	Genome - List[Tuple[float]] a genome will represent the PUF. Each tuple will be a gate and the floats represent the time it takes for electricity to go though either cable.
+	Population - Equivalent to mockup.
 
-	Item - Gate / Switch. Is a sequence of 1 and 0 (maybe bool?) representing the input for the arbiter PUF to calculate
-	Items - Challenges. List of challenges for the PUF to calculate the results
+	Item - Gate / Switch. Is a sequence of 1 and 0 (maybe bool?) representing the input for the arbiter PUF to calculate.
+	Items - Challenges. List of challenges for the PUF to calculate the results.
 
 functions:
-	runEvolution - should be exactly the same
-	generateGenome - Same thing. Unless there are other option than random generation
-	generatePopulation - Equivalent to mockup
-	fitness - Genomes still have to be same size. Loop: Calculate the results of the challenges (result maybe how many are correct?)
-	selectPair - Equivalent to mockup (part of standard ES)
-	singlePointCrossover - Has to be changed. Maybe take the averages of the floats in the genomes
-	mutation - Slightly change random value(s) in the genome
+	runEvolution - should be exactly the same.
+	generateGenome - Same thing. Unless there are other options than random generation.
+	generatePopulation - Equivalent to mockup.
+	fitness - Genomes still have to be same size. Loop: Calculate the results of the challenges (result maybe how many are correct?).
+	selectPair - Equivalent to mockup (part of standard ES).
+	singlePointCrossover - Has to be changed. Maybe take the averages of the floats in the genomes.
+	mutation - Slightly change random value(s) in the genome.
 
 
 
