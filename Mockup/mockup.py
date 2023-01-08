@@ -26,14 +26,16 @@ Item = namedtuple("Item", ["name", "weight", "value"])
 
 # Hardcoded values for the sake of simplicity of the mockup (randomly generated)
 items = [
-    Item("Lorem", 936, 148),
-    Item("Ipsum", 793, 442),
-    Item("Dolor", 622, 431),
-    Item("Sit", 888, 444),
-    Item("Amet", 850, 112),
-    Item("Consetetur", 850, 112),
-    Item("Sadipscing", 781, 167),
-    Item("Elitr", 328, 711),
+    Item("Laptop", 2200, 500),
+    Item("Headphones", 160, 150),
+    Item("Coffee Mug", 350, 60),
+    Item("Notepad", 333, 40),
+    Item("Water Bottle", 192, 30),
+    Item("Mints", 25, 5),
+    Item("Socks", 38, 10),
+    Item("Tissues", 80, 15),
+    Item("Phone", 200, 500),
+    Item("Baseball Cap", 70, 100),
 ]
 
 
@@ -173,13 +175,13 @@ population, generations = runEvolution(
     ),
     fitness_func=partial(
         # Arbitrary value for weight limit
-        fitness, items=items, weight_limit=3500
+        fitness, items=items, weight_limit=3000
     ),
     selection_func=selectPair,
     crossover_func=singlePointCrossover,
     mutation_func=mutation,
     # Arbitrary value for fitness limit
-    fitness_limit=2000,
+    fitness_limit=1310,
     generation_limit=100
 )
 
