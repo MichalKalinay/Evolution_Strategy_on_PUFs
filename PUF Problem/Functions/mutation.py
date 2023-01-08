@@ -3,6 +3,7 @@ from random import randrange, random
 from Genome import Genome
 
 
+# Mutate one genome by giving it @mutations many new values each with a @probability
 def mutation_function(genome: Genome, mutations: int = 1, probability: float = 0.5) -> Genome:
     for _ in range(mutations):
         # Choose a random index
