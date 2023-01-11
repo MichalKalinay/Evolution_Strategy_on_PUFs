@@ -1,11 +1,13 @@
 from random import choices
 
-from fitness import fitness
+import fitness as fit
 from Population import Population
+
+FitnessFunc = fit.fitness()
 
 
 # Select the fittest 2 Genomes from a given Population to be the parents for the next generation
-def select_pair(population: Population, fitness_func: fitness) -> Population:
+def select_pair(population: Population, fitness_func: FitnessFunc) -> Population:
     result = Population(0, 0)
     # Solutions with a higher fitness value will be more likely to be chosen
     result.genomes.append(choices(
