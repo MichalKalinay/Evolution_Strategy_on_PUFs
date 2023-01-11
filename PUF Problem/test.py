@@ -50,19 +50,19 @@ if Sklearn_attack:
     # X, y = crps.challenges, crps.information.flatten()
 
     # This should be raw, not previously transformed data
-    X, y = challenges_manual, responses_manual
-    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
+    Challenges, Responses = challenges_manual, responses_manual
+    Ch_train, Ch_test, Res_train, Res_test = train_test_split(Challenges, Responses, stratify=Responses, random_state=1)
     clf = MLPClassifier(random_state=1, max_iter=100, early_stopping=True, verbose=True)
-    clf.fit(X_train, y_train)
-    clf.predict_proba(X_test[:1])
-    clf.predict(X_test[:5, :])
+    clf.fit(Ch_train, Res_train)
+    clf.predict_proba(Ch_test[:1])
+    clf.predict(Ch_test[:5, :])
 
-    sklearn_score = clf.score(X_test, y_test)
+    sklearn_score = clf.score(Ch_test, Res_test)
 
 
 if Pypuf_attack:
     print("Score of pypuf MLP Attack (data / test set): " + str(pypuf_score))
-    # Since data and test set previously split this only applies to the training set
+    # Since data previously split into training and test set, this only applies to the training set
     print("Score of pypuf MLP Attack (similarity; train set only): " + str(pypuf_score_similarity))
 if Sklearn_attack:
     print("Score of sklearn MLP Attack (data / test set): " + str(sklearn_score))
