@@ -1,0 +1,30 @@
+Algorithm	n (PUF length)	k (amount of PUFs)	N (number of challenges)	Epochs	EarlyStop (Epoch?)	Accuracy	Time
+
+Pypuf		16				1					250.000						100		Yes (1)				99.4%		1.27 sec
+Sklearn		16				1					250.000						100		Yes (97)			93.5%		72.48 sec
+
+Pypuf		16				3					250.000						100		Yes (4)				98.3%		1.77 sec
+Sklearn		16				3					250.000						100		Yes (72)			70.0%		54.42 sec
+
+Pypuf		16				5					250.000						100		Yes (22)			97.1%		5.41 sec
+Sklearn		16				5					250.000						100		No  (100)			63.7%		77.51 sec
+
+
+Pypuf		32				1					250.000						100		Yes (1)				99.2%		1.27 sec
+Sklearn		32				1					250.000						100		Yes (34)			69.3%		27.25 sec
+
+Pypuf		32				3					250.000						100		Yes (5)				98.0%		1.99 sec
+Sklearn		32				3					250.000						100		Yes (28)			53.0%		23.22 sec
+
+Pypuf		32				5					250.000						100		Yes (15)			96.8%		4.05 sec
+Sklearn		32				5					250.000						100		Yes (18)			50.1%		14.94 sec
+
+
+Pypuf		64				1					250.000						100		Yes (1)				99.1%		1.18 sec
+Sklearn		64				1					250.000						100		Yes (59)			64.5%		49.55 sec
+
+Pypuf		64				3					250.000						100		Yes (4)				97.8%		1.99 sec
+Sklearn		64				3					250.000						100		Yes (15)			49.8%		13.47 sec
+
+Pypuf		64				5					250.000						100		Yes (15)			97.3%		4.28 sec
+Sklearn		64				5					250.000						100		Yes (15)			50.0%		13.13 sec
