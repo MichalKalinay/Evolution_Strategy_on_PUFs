@@ -17,12 +17,13 @@ Pypuf_attack = True
 Sklearn_attack = True
 
 number_of_challenges = 250000
+puf_length = 64
 
 print("Generating PUF, Challenges and Responses... ", end="")
-puf = pypuf.simulation.XORArbiterPUF(n=16, k=1, seed=1)
+puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=5, seed=1)
 crps = pypuf.io.ChallengeResponseSet.from_simulation(puf, N=number_of_challenges, seed=1)
 
-challenges_manual = pypuf.io.random_inputs(n=16, N=number_of_challenges, seed=1)
+challenges_manual = pypuf.io.random_inputs(n=puf_length, N=number_of_challenges, seed=1)
 responses_manual = puf.eval(challenges_manual)
 print("done!")
 
