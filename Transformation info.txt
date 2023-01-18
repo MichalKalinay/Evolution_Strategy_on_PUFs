@@ -1,0 +1,30 @@
+This will try to summarize and analyze the transformation of the challenges (input data for ML) in pypuf.
+
+
+Location of transformation: pypuf/simulation/base.py
+
+generate_concatenated_transform(cls, transform_1: Callable, n1: int, transform_2: Callable) -> Callable:	(Returns a "transform" function)
+	My understanding of that method:
+	(1) Take the challenges (ndarray param in transform func) array.
+	(2) Split it at index n1.
+	(3) Apply transform_1 on the first half and transform_2 on second half.
+	(4) Concatinate those two and return as transformed challenges
+	
+	The returning transform function (transform(challenges: ndarray, k: int)) is described as follows:
+	"Generates sub-challenges by applying by applying different input transformations depending on the index
+    of the sub-challenge bit."
+
+The following 2 functions seem to be the ones used as input in the function above:	
+att(cls, sub_challenges: ndarray) -> None:
+	Described as Arbiter Threshold Transform.
+	
+        (_, _, n) = sub_challenges.shape
+        for i in range(n - 2, -1, -1):
+            sub_challenges[:, :, i] *= sub_challenges[:, :, i + 1]
+
+att_inverse(cls, sub_challenges: ndarray) -> None:
+	Described as Inverse Arbiter Threshold Transform.
+	
+        (_, _, n) = sub_challenges.shape
+        for i in range(n - 1):
+            sub_challenges[:, :, i] *= sub_challenges[:, :, i + 1]
