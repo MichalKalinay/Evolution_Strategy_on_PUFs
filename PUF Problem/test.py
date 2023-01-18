@@ -47,7 +47,7 @@ if Pypuf_attack:
     # NOTE: In this version this is evaluated only using Train_data
     pypuf_score_similarity = pypuf.metrics.similarity(puf, model, seed=1)
 
-    # Evaluation using a data and a test set
+    # Evaluation using a training and test set
     pypuf_score = 1 - np.mean(Test_results != np.array(Test_data.information.flatten()))
 
     # Timing of attack and fit
