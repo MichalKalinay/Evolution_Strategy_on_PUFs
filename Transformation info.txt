@@ -13,6 +13,9 @@ generate_concatenated_transform(cls, transform_1: Callable, n1: int, transform_2
 	The returning transform function (transform(challenges: ndarray, k: int)) is described as follows:
 	"Generates sub-challenges by applying by applying different input transformations depending on the index
     of the sub-challenge bit."
+	
+generate_stacked_transform(cls, transform_1: Callable, k1: int, transform_2: Callable) -> Callable:
+	Should be pretty much the same?
 
 The following 2 functions seem to be the ones used as input in the function above:	
 att(cls, sub_challenges: ndarray) -> None:
