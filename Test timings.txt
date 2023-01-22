@@ -19,6 +19,12 @@ Sklearn		32				3					250.000						100		Yes (28)			53.0%		23.22 sec
 Pypuf		32				5					250.000						100		Yes (15)			96.8%		4.05 sec
 Sklearn		32				5					250.000						100		Yes (18)			50.1%		14.94 sec
 
+--WITH TRANSFORMATION OF CHALLENGES--
+
+Sklearn		32				5					250.000						100		No (100)			79.4%		73.96 sec
+
+Sklearn		32				5					500.000						100		Yes (90)			81.3%		131.16 sec
+
 
 Pypuf		64				1					250.000						100		Yes (1)				99.1%		1.18 sec
 Sklearn		64				1					250.000						100		Yes (59)			64.5%		49.55 sec
