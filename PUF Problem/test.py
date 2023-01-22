@@ -16,8 +16,8 @@ import time
 Pypuf_attack = True
 Sklearn_attack = True
 
-number_of_challenges = 250000
-puf_length = 64
+number_of_challenges = 500000
+puf_length = 32
 
 print("Generating PUF, Challenges and Responses... ", end="")
 puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=5, seed=1)
@@ -57,6 +57,15 @@ if Pypuf_attack:
 if Sklearn_attack:
     # Probably transformed data by pypuf lib?
     # Challenges, Responses = crps.challenges, crps.information.flatten()
+
+    # Transformation of manually generated challenges
+    print("Transforming Challenges for Sklearn attack... ", end="")
+    challenges_transformed = np.fliplr(challenges_manual)
+    challenges_transformed = np.cumprod(challenges_transformed, axis=1)
+    challenges_transformed = np.fliplr(challenges_transformed)
+    ones = np.ones((number_of_challenges, 1))
+    challenges_manual = np.hstack((challenges_transformed, ones))
+    print("done!")
 
     # This should be raw, not previously transformed data
     Challenges, Responses = challenges_manual, responses_manual
