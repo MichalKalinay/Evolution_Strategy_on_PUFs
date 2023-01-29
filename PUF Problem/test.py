@@ -18,9 +18,11 @@ Sklearn_attack = True
 
 number_of_challenges = 500000
 puf_length = 32
+# Amount of parallel PUFs
+k = 5
 
 print("Generating PUF, Challenges and Responses... ", end="")
-puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=5, seed=1)
+puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
 crps = pypuf.io.ChallengeResponseSet.from_simulation(puf, N=number_of_challenges, seed=1)
 
 challenges_manual = pypuf.io.random_inputs(n=puf_length, N=number_of_challenges, seed=1)
@@ -34,7 +36,7 @@ if Pypuf_attack:
     Test_data = crps[slice:]
 
     start_time = time.time()
-    attack = pypuf.attack.MLPAttack2021(Train_data, seed=3, net=[2 ** 4, 2 ** 5, 2 ** 4],
+    attack = pypuf.attack.MLPAttack2021(Train_data, seed=3, net=[2 ** (k-1), 2 ** k, 2 ** (k-1)],
                                         epochs=100, lr=.001, bs=1000, early_stop=.08)
     attack.fit()
     model = attack.model
@@ -71,7 +73,8 @@ if Sklearn_attack:
     Challenges, Responses = challenges_manual, responses_manual
     Ch_train, Ch_test, Res_train, Res_test = train_test_split(Challenges, Responses, stratify=Responses, random_state=1)
     start_time = time.time()
-    clf = MLPClassifier(random_state=1, max_iter=100, early_stopping=True, verbose=True)
+    clf = MLPClassifier(random_state=1, max_iter=100, hidden_layer_sizes=(2 ** (k-1), 2 ** k, 2 ** (k-1)),
+                        activation="tanh", solver="adam", early_stopping=True, verbose=True)
     clf.fit(Ch_train, Res_train)
     end_time = time.time()
     clf.predict_proba(Ch_test[:1])
@@ -84,10 +87,10 @@ if Sklearn_attack:
 
 
 if Pypuf_attack:
-    print("Score of pypuf MLP Attack (data / test set): " + str(pypuf_score))
+    print("Score of pypuf MLP Attack (training / test set): " + str(pypuf_score))
     # Since data previously split into training and test set, this only applies to the training set
     print("Score of pypuf MLP Attack (similarity; train set only): " + str(pypuf_score_similarity))
     print("And processing time of: " + str(pypuf_time))
 if Sklearn_attack:
-    print("Score of sklearn MLP Attack (data / test set): " + str(sklearn_score))
+    print("Score of sklearn MLP Attack (training / test set): " + str(sklearn_score))
     print("And processing time of: " + str(sklearn_time))
