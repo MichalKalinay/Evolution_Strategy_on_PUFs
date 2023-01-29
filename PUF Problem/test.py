@@ -89,7 +89,7 @@ if Sklearn_attack:
 if Pypuf_attack:
     print("Score of pypuf MLP Attack (training / test set): " + str(pypuf_score))
     # Since data previously split into training and test set, this only applies to the training set
-    print("Score of pypuf MLP Attack (similarity; train set only): " + str(pypuf_score_similarity))
+    print("Score of pypuf MLP Attack (similarity; train set only): " + str(pypuf_score_similarity[0]))
     print("And processing time of: " + str(pypuf_time))
 if Sklearn_attack:
     print("Score of sklearn MLP Attack (training / test set): " + str(sklearn_score))
