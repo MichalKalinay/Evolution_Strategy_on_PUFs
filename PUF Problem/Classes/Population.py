@@ -12,5 +12,8 @@ class Population:
             genome = Genome(genome_length)
             self.genomes.append(genome)
 
+    def add_genomes(self, genomes_to_add: list[Genome]):
+        self.genomes += genomes_to_add
+
     def __repr__(self):
         return f"{self.genomes}"
