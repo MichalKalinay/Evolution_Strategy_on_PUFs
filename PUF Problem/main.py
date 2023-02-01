@@ -10,7 +10,7 @@ from Functions import crossover, fitness, mutation, selection
 
 import time
 
-number_of_challenges = 250000
+number_of_challenges = 10000
 puf_length = 16
 # Amount of parallel PUFs
 k = 1
@@ -40,14 +40,15 @@ def run_evolution(
         population_size=50,
         genome_length=puf_length,
 
-        # Limits the function to return when this limit of the best value is reached
-        fitness_limit=int,
+        # Limits the function to return when this accuracy is reached
+        fitness_limit=0.9,
         # Limits the amount of generations this function will run in case fitness limit is not reached
-        generation_limit=100
+        generation_limit=10
 ) -> Tuple[Population, int]:
     population = Population(population_size, genome_length)
 
     for i in range(generation_limit):
+        print(f"Running generation {i} ... ", end="")
         # Sort the population by fitness
         population.genomes = sorted(
             population.genomes,
@@ -57,7 +58,10 @@ def run_evolution(
         )
 
         # Is the fitness limit reached?
-        if fitness_func(population.genomes[0]) >= fitness_limit:
+        best_fit = fitness_func(population.genomes[0], challenges, responses) / number_of_challenges
+        print(f"(Best fitness so far: {best_fit}) ")
+        if best_fit >= fitness_limit:
+            print("... done!")
             break
 
         # Scuffed solution due to my implementation of the data
@@ -87,4 +91,20 @@ def run_evolution(
     )
 
     # Return population and index to distinguish termination by fitness limit or generation limit
+    print("... done!")
     return population, i
+
+
+# Run The Evolution
+population, generations = run_evolution(
+    fitness_func=fitness.fitness,
+    selection_func=selection.select_pair,
+    crossover_func=crossover.single_point_crossover,
+    mutation_func=mutation.mutation_function,
+
+    fitness_limit=0.9,
+    generation_limit=10
+)
+print(f"Number of generations: {generations}")
+print(f"Best solution: {population.genomes[0]}")
+print(f"And its accuracy: {fitness.fitness(population.genomes[0], challenges, responses) / number_of_challenges}")

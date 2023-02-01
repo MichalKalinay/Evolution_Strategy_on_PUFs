@@ -18,4 +18,11 @@ def single_point_crossover(parent1: Genome, parent2: Genome) -> Tuple[Genome, Ge
 
     # Perform a crossover between the parents; Slicing them randomly in 2 parts and merging them
     slice = randint(1, length - 1)
-    return parent1[0:slice] + parent2[slice:], parent2[0:slice] + parent1[slice:]
+
+    # Results
+    selection1 = Genome(0)
+    selection2 = Genome(0)
+    selection1.set_values(parent1.values[0:slice] + parent2.values[slice:])
+    selection2.set_values(parent2.values[0:slice] + parent1.values[slice:])
+
+    return selection1, selection2

@@ -14,7 +14,7 @@ def select_pair(population: Population, fitness_func: FitnessFunc,
                 challenges: ndarray, responses: ndarray) -> Population:
     result = Population(0, 0)
     # Solutions with a higher fitness value will be more likely to be chosen
-    result.genomes.append(choices(
+    result.add_genomes(choices(
         population=population.genomes,
         # Weight of the choice is the fitness
         weights=[fitness_func(genome, challenges, responses) for genome in population.genomes],
