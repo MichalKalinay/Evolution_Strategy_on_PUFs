@@ -1,6 +1,8 @@
 from random import randint
 from typing import Tuple
 
+import numpy as np
+
 from Genome import Genome
 
 
@@ -22,7 +24,7 @@ def single_point_crossover(parent1: Genome, parent2: Genome) -> Tuple[Genome, Ge
     # Results
     selection1 = Genome(0)
     selection2 = Genome(0)
-    selection1.set_values(parent1.values[0:slice] + parent2.values[slice:])
-    selection2.set_values(parent2.values[0:slice] + parent1.values[slice:])
+    selection1.set_values(np.concatenate((parent1.values[0:slice], parent2.values[slice:]), axis=None))
+    selection2.set_values(np.concatenate((parent2.values[0:slice], parent1.values[slice:]), axis=None))
 
     return selection1, selection2

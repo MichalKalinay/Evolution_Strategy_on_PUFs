@@ -1,14 +1,13 @@
-import random
+import numpy as np
 
 
 class Genome:
     # List of the values of the delays between each gate representing the structure of a PUF
-    values = [float]
+    values = []
 
     def __init__(self, length: int):
-        self.values = []
         for i in range(0, length):
-            self.values.append(random.uniform(0, 1))
+            self.values = np.random.normal(loc=0.0, scale=1.0, size=length)
 
     def set_values(self, values):
         self.values = values

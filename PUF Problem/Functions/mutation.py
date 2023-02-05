@@ -1,4 +1,6 @@
-from random import randrange, random, uniform
+from random import randrange, random
+
+import numpy as np
 
 from Genome import Genome
 
@@ -10,7 +12,7 @@ def mutation_function(genome: Genome, mutations: int = 1, probability: float = 0
         index = randrange(len(genome.values))
         # Generate a new value for the float at the index
         if random() <= probability:
-            genome.set_value_at_index(index, uniform(0, 1))
+            genome.set_value_at_index(index, np.random.normal(loc=0.0, scale=1.0, size=1))
 
     # Mutated genome
     return genome

@@ -4,10 +4,13 @@ from Genome import Genome
 
 
 class Population:
-    genomes = List[Genome]
+    genomes = []
 
     def __init__(self, size: int, genome_length: int):
-        self.genomes = []
+        if size == 0 or genome_length == 0:
+            self.genomes = []
+            return
+
         for i in range(0, size):
             genome = Genome(genome_length)
             self.genomes.append(genome)
