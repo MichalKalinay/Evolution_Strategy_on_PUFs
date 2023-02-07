@@ -2,7 +2,6 @@ from random import choices
 from typing import Callable, List
 
 import numpy as np
-from numpy import ndarray
 
 from Genome import Genome
 from Population import Population

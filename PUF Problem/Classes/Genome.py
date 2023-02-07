@@ -6,8 +6,9 @@ class Genome:
     values = []
 
     def __init__(self, length: int):
-        for i in range(0, length):
-            self.values = np.random.normal(loc=0.0, scale=1.0, size=length)
+        # TODO Check if correct
+        # Random gaussian distribution of values between -1 and 1 for each gate of the genome representing a PUF
+        self.values = np.random.normal(loc=0.0, scale=1.0, size=length)
 
     def set_values(self, values):
         self.values = values

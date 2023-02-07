@@ -4,7 +4,6 @@ from typing import Callable, Tuple, List
 import numpy as np
 import pypuf.io
 import pypuf.simulation
-from numpy import ndarray
 
 from Genome import Genome
 from Population import Population
@@ -24,7 +23,7 @@ FitnessFunc = Callable[[Genome, List[np.array]], int]
 SelectionFunc = Callable[[Population, FitnessFunc, List[np.array]], Tuple[Genome, Genome]]
 # Manipulating the parents and children for the next generation
 CrossoverFunc = Callable[[Genome, Genome], Tuple[Genome, Genome]]
-MutationFunc = Callable[[Genome], Genome]
+MutationFunc = Callable[[Genome, int], Genome]
 
 puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
 
@@ -38,6 +37,7 @@ challenges_transformed = np.fliplr(challenges_transformed)
 ones = np.ones((len(challenges_pre_trans), 1))
 challenges = np.hstack((challenges_transformed, ones))
 
+# Zipping of crps so later a batch for each generation can be randomly selected
 zip_challenge_response = list(zip(challenges, responses))
 
 
@@ -54,7 +54,8 @@ def run_evolution(
         # Limits the function to return when this accuracy is reached
         fitness_limit=0.9,
         # Limits the amount of generations this function will run in case fitness limit is not reached
-        generation_limit=10
+        generation_limit=50,
+        crps_per_generation=2000
 ) -> Tuple[Population, int]:
     start_time = time.time()
     population = Population(population_size, genome_length+1)
@@ -64,9 +65,7 @@ def run_evolution(
         print(f"Running generation {i} ... ", end="")
 
         # Generate challenge-response-pairs to be used for this generation
-        crps_per_generation = 2000
         crps_generation = random.choices(zip_challenge_response, k=crps_per_generation)
-        crps_generation = zip_challenge_response
 
         # Sort the population by fitness
         population.genomes = sorted(
@@ -94,9 +93,11 @@ def run_evolution(
             parents = selection_func(population, fitness_func, crps_generation)
             # Generate offsprings by crossing the parents
             offspring1, offspring2 = crossover_func(parents.genomes[0], parents.genomes[1])
-            # Mutate both offsprings
-            offspring1 = mutation_func(offspring1)
-            offspring2 = mutation_func(offspring2)
+            # Higher accuracy -> fewer mutations
+            mutations_amount = int((genome_length-(genome_length*best_fit))/2)
+            # Mutate offsprings
+            offspring1 = mutation_func(offspring1, mutations_amount)
+            offspring2 = mutation_func(offspring2, mutations_amount)
             # Include the offsprings in the next generation
             next_generation.add_genomes([offspring1, offspring2])
 
@@ -110,13 +111,14 @@ def run_evolution(
     population.genomes = sorted(
         population.genomes,
         key=lambda genome: fitness_func(genome, zip_challenge_response),
+        # Best fitness is at the start
         reverse=True
     )
 
     end_time = time.time()
 
     # Return population and index to distinguish termination by fitness limit or generation limit
-    print(f"... done! Processing time of: {str(end_time - start_time)} sec")
+    print(f"... done! Processing time of: {end_time - start_time} sec")
     return population, i
 
 
@@ -126,9 +128,6 @@ population, generations = run_evolution(
     selection_func=selection.select_pair,
     crossover_func=crossover.single_point_crossover,
     mutation_func=mutation.mutation_function,
-
-    fitness_limit=0.9,
-    generation_limit=10
 )
 print(f"Number of generations: {generations+1}")
 print(f"Best solution: {population.genomes[0]}")

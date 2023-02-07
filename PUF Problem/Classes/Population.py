@@ -1,5 +1,3 @@
-from typing import List
-
 from Genome import Genome
 
 
@@ -7,6 +5,7 @@ class Population:
     genomes = []
 
     def __init__(self, size: int, genome_length: int):
+        # Edge case for when generating next generation for the first time as an empty Population
         if size == 0 or genome_length == 0:
             self.genomes = []
             return
