@@ -5,16 +5,14 @@ import numpy as np
 import pypuf.io
 import pypuf.simulation
 
+import matplotlib.pyplot as plt
+
 from Genome import Genome
 from Population import Population
 from Functions import crossover, fitness, mutation, selection
 
 import time
 
-number_of_challenges = 10000
-puf_length = 16
-# Amount of parallel PUFs
-k = 1
 
 # Functions as parameters:
 # Fitness function has to take a genome and give a value of a solution
@@ -25,47 +23,95 @@ SelectionFunc = Callable[[Population, FitnessFunc, List[np.array]], Tuple[Genome
 CrossoverFunc = Callable[[Genome, Genome], Tuple[Genome, Genome]]
 MutationFunc = Callable[[Genome, int], Genome]
 
-puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
 
-challenges_pre_trans = pypuf.io.random_inputs(n=puf_length, N=number_of_challenges, seed=1)
-responses = puf.eval(challenges_pre_trans)
+def main(
+    number_of_challenges=10000,
+    puf_length=16,
+    # Amount of parallel PUFs
+    k=1,
 
-# Transformation of challenges like in the Lin paper
-challenges_transformed = np.fliplr(challenges_pre_trans)
-challenges_transformed = np.cumprod(challenges_transformed, axis=1)
-challenges_transformed = np.fliplr(challenges_transformed)
-ones = np.ones((len(challenges_pre_trans), 1))
-challenges = np.hstack((challenges_transformed, ones))
+    # Functions to be used in evolutions
+    fitness_func=fitness.fitness,
+    selection_func=selection.select_pair,
+    crossover_func=crossover.single_point_crossover,
+    mutation_func=mutation.mutation_function,
 
-# Zipping of crps so later a batch for each generation can be randomly selected
-zip_challenge_response = list(zip(challenges, responses))
+    # Parameters for the evolution function
+    population_size=50,
+    fitness_limit=0.9,
+    generation_limit=10,
+    crps_per_generation=2000
+):
+
+    puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
+
+    challenges_pre_trans = pypuf.io.random_inputs(n=puf_length, N=number_of_challenges, seed=1)
+    responses = puf.eval(challenges_pre_trans)
+
+    # Transformation of challenges like in the Lin paper
+    challenges_transformed = np.fliplr(challenges_pre_trans)
+    challenges_transformed = np.cumprod(challenges_transformed, axis=1)
+    challenges_transformed = np.fliplr(challenges_transformed)
+    ones = np.ones((len(challenges_pre_trans), 1))
+    challenges = np.hstack((challenges_transformed, ones))
+
+    # Zipping of crps so later a batch for each generation can be randomly selected
+    zip_challenge_response = list(zip(challenges, responses))
+
+    # Run The Evolution
+    population, generations, accuracies = run_evolution(
+        crps=zip_challenge_response,
+        genome_length=puf_length,
+
+        fitness_func=fitness_func,
+        selection_func=selection_func,
+        crossover_func=crossover_func,
+        mutation_func=mutation_func,
+
+        population_size=population_size,
+        fitness_limit=fitness_limit,
+        generation_limit=generation_limit,
+        crps_per_generation=crps_per_generation
+    )
+    print(f"Number of generations: {generations+1}")
+    print(f"Best solution: {population.genomes[0]}")
+    print(f"And its accuracy: {fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges}")
+
+    plt.plot(accuracies, "o-r")
+    plt.title(f"PUF: Length of {puf_length} and k{k}. ES: Population size of {population_size}.")
+    plt.ylabel("accuracy")
+    plt.xlabel("generation")
+    plt.show()
 
 
 # noinspection DuplicatedCode
 def run_evolution(
+        crps,
+        genome_length,
+
         fitness_func=FitnessFunc,
         selection_func=SelectionFunc,
         crossover_func=CrossoverFunc,
         mutation_func=MutationFunc,
 
         population_size=50,
-        genome_length=puf_length,
 
         # Limits the function to return when this accuracy is reached
         fitness_limit=0.9,
         # Limits the amount of generations this function will run in case fitness limit is not reached
         generation_limit=50,
         crps_per_generation=2000
-) -> Tuple[Population, int]:
+) -> Tuple[Population, int, List[float]]:
     start_time = time.time()
     population = Population(population_size, genome_length+1)
+    best_fitness_over_time = []
 
     for i in range(generation_limit):
         generation_start_time = time.time()
         print(f"Running generation {i} ... ", end="")
 
         # Generate challenge-response-pairs to be used for this generation
-        crps_generation = random.choices(zip_challenge_response, k=crps_per_generation)
+        crps_generation = random.choices(crps, k=crps_per_generation)
 
         # Sort the population by fitness
         population.genomes = sorted(
@@ -78,6 +124,7 @@ def run_evolution(
         # Is the fitness limit reached?
         best_fit = fitness_func(population.genomes[0], crps_generation) / crps_per_generation
         print(f"(Best fitness so far: {best_fit})")
+        best_fitness_over_time.append(best_fit)
         if best_fit >= fitness_limit:
             early_break_time = time.time()
             print(f"... done! Processing time of generation {i}: {early_break_time - generation_start_time} sec")
@@ -110,7 +157,7 @@ def run_evolution(
     # Sort final population in case generation limit was reached
     population.genomes = sorted(
         population.genomes,
-        key=lambda genome: fitness_func(genome, zip_challenge_response),
+        key=lambda genome: fitness_func(genome, crps),
         # Best fitness is at the start
         reverse=True
     )
@@ -119,16 +166,8 @@ def run_evolution(
 
     # Return population and index to distinguish termination by fitness limit or generation limit
     print(f"... done! Processing time of: {end_time - start_time} sec")
-    return population, i
+    return population, i, best_fitness_over_time
 
 
-# Run The Evolution
-population, generations = run_evolution(
-    fitness_func=fitness.fitness,
-    selection_func=selection.select_pair,
-    crossover_func=crossover.single_point_crossover,
-    mutation_func=mutation.mutation_function,
-)
-print(f"Number of generations: {generations+1}")
-print(f"Best solution: {population.genomes[0]}")
-print(f"And its accuracy: {fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges}")
+if __name__ == '__main__':
+    main()
