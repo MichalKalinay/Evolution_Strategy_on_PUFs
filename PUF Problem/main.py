@@ -42,6 +42,8 @@ def main(
     generation_limit=10,
     crps_per_generation=2000
 ):
+    # Create file if it doesn't exist. Append to the end of the file.
+    log = open("Logs.txt", "a")
 
     puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
 
@@ -58,6 +60,12 @@ def main(
     # Zipping of crps so later a batch for each generation can be randomly selected
     zip_challenge_response = list(zip(challenges, responses))
 
+    log.write("Evolution Strategy on an XORArbiterPUF\n")
+    log.write(f"PUF:\nLength: {puf_length}, k: {k}, crps: {number_of_challenges}\n")
+    log.write(f"ES:\nPopulation size: {population_size}, Fitness limit: {fitness_limit}, " +
+              f"Max generations: {generation_limit}, CRPs per generation: {crps_per_generation}\n")
+    log.write("running attack...\n\n")
+
     # Run The Evolution
     population, generations, accuracies = run_evolution(
         crps=zip_challenge_response,
@@ -73,9 +81,14 @@ def main(
         generation_limit=generation_limit,
         crps_per_generation=crps_per_generation
     )
+    final_accuracy = fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges
+
     print(f"Number of generations: {generations+1}")
     print(f"Best solution: {population.genomes[0]}")
-    print(f"And its accuracy: {fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges}")
+    print(f"And its accuracy: {final_accuracy}")
+
+    log.write(f"Attack accuracy: {final_accuracy}\nNumber of generations: {generations+1}\n" +
+              f"And the final result: {population.genomes[0]}\n\n\n")
 
     plt.plot(accuracies, "o-r")
     plt.title(f"PUF: Length of {puf_length} and k{k}. ES: Population size of {population_size}.")
