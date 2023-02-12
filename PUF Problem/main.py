@@ -89,6 +89,7 @@ def main(
 
     log.write(f"Attack accuracy: {final_accuracy}\nNumber of generations: {generations+1}\n" +
               f"And the final result: {population.genomes[0]}\n\n\n")
+    log.close()
 
     plt.plot(accuracies, "o-r")
     plt.title(f"PUF: Length of {puf_length} and k{k}. ES: Population size of {population_size}.")
