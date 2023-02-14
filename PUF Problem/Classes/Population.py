@@ -5,9 +5,9 @@ class Population:
     genomes = []
 
     def __init__(self, size: int, genome_length: int):
+        self.genomes = []
         # Edge case for when generating next generation for the first time as an empty Population
         if size == 0 or genome_length == 0:
-            self.genomes = []
             return
 
         for i in range(0, size):
