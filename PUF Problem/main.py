@@ -25,6 +25,7 @@ MutationFunc = Callable[[Genome, int], Genome]
 
 
 def main(
+    # PUF Parameters
     number_of_challenges=10000,
     puf_length=16,
     # Amount of parallel PUFs
@@ -36,66 +37,107 @@ def main(
     crossover_func=crossover.single_point_crossover,
     mutation_func=mutation.mutation_function,
 
-    # Parameters for the evolution function
+    # ES Parameters
     population_size=50,
     fitness_limit=0.9,
-    generation_limit=10,
-    crps_per_generation=2000
+    generation_limit=30,
+    crps_per_generation=2000,
+
+    # General / Print Parameters
+    # It is recommended to disable individual graph generation if running more than 1 attack
+    generate_individual_graph=False,
+    # Won't generate a final graph if only 1 attack has been performed
+    generate_final_graph=True,
+    attack_amount=10
 ):
+    # Grab current time to use as timestamp in log name
+    current_time = time.localtime()
+    timestamp = f"{current_time.tm_year}-{current_time.tm_mon}-{current_time.tm_mday}_" \
+                f"{current_time.tm_hour}-{current_time.tm_min}-{current_time.tm_sec}"
     # Create file if it doesn't exist. Append to the end of the file.
-    log = open("Logs.txt", "a")
-
-    puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
-
-    challenges_pre_trans = pypuf.io.random_inputs(n=puf_length, N=number_of_challenges, seed=1)
-    responses = puf.eval(challenges_pre_trans)
-
-    # Transformation of challenges like in the Lin paper
-    challenges_transformed = np.fliplr(challenges_pre_trans)
-    challenges_transformed = np.cumprod(challenges_transformed, axis=1)
-    challenges_transformed = np.fliplr(challenges_transformed)
-    ones = np.ones((len(challenges_pre_trans), 1))
-    challenges = np.hstack((challenges_transformed, ones))
-
-    # Zipping of crps so later a batch for each generation can be randomly selected
-    zip_challenge_response = list(zip(challenges, responses))
-
+    log = open(f"Log_{timestamp}.txt", "a")
     log.write("Evolution Strategy on an XORArbiterPUF\n")
+    log.write(f"Running {attack_amount} attack(s):\n")
     log.write(f"PUF:\nLength: {puf_length}, k: {k}, crps: {number_of_challenges}\n")
     log.write(f"ES:\nPopulation size: {population_size}, Fitness limit: {fitness_limit}, " +
-              f"Max generations: {generation_limit}, CRPs per generation: {crps_per_generation}\n")
-    log.write("running attack...\n\n")
+              f"Max generations: {generation_limit}, CRPs per generation: {crps_per_generation}\n\n")
 
-    # Run The Evolution
-    population, generations, accuracies = run_evolution(
-        crps=zip_challenge_response,
-        genome_length=puf_length,
+    # Collect final accuracies over all attacks
+    final_accuracies = []
 
-        fitness_func=fitness_func,
-        selection_func=selection_func,
-        crossover_func=crossover_func,
-        mutation_func=mutation_func,
+    # Start timer
+    overall_start_time = time.time()
 
-        population_size=population_size,
-        fitness_limit=fitness_limit,
-        generation_limit=generation_limit,
-        crps_per_generation=crps_per_generation
-    )
-    final_accuracy = fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges
+    for i in range(attack_amount):
+        log.write(f"running attack {i+1}...\n")
+        print(f"running attack {i+1}...")
 
-    print(f"Number of generations: {generations+1}")
-    print(f"Best solution: {population.genomes[0]}")
-    print(f"And its accuracy: {final_accuracy}")
+        # Generate PUF and corresponding CRPs
+        puf = pypuf.simulation.XORArbiterPUF(n=puf_length, k=k, seed=1)
 
-    log.write(f"Attack accuracy: {final_accuracy}\nNumber of generations: {generations+1}\n" +
-              f"And the final result: {population.genomes[0]}\n\n\n")
+        challenges_pre_trans = pypuf.io.random_inputs(n=puf_length, N=number_of_challenges, seed=1)
+        responses = puf.eval(challenges_pre_trans)
+
+        # Transformation of challenges like in the Lin paper
+        challenges_transformed = np.fliplr(challenges_pre_trans)
+        challenges_transformed = np.cumprod(challenges_transformed, axis=1)
+        challenges_transformed = np.fliplr(challenges_transformed)
+        ones = np.ones((len(challenges_pre_trans), 1))
+        challenges = np.hstack((challenges_transformed, ones))
+
+        # Zipping of crps so later a batch for each generation can be randomly selected
+        zip_challenge_response = list(zip(challenges, responses))
+
+        # Run The Evolution
+        population, generations, accuracies = run_evolution(
+            crps=zip_challenge_response,
+            genome_length=puf_length,
+
+            fitness_func=fitness_func,
+            selection_func=selection_func,
+            crossover_func=crossover_func,
+            mutation_func=mutation_func,
+
+            population_size=population_size,
+            fitness_limit=fitness_limit,
+            generation_limit=generation_limit,
+            crps_per_generation=crps_per_generation
+        )
+        final_accuracy = fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges
+        final_accuracies.append(final_accuracy)
+
+        print(f"Number of generations: {generations+1}")
+        print(f"Best solution: {population.genomes[0]}")
+        print(f"And its accuracy: {final_accuracy}")
+
+        log.write(f"Results of attack {i+1}:\nAccuracies over time: {accuracies}\n")
+        log.write(f"Final attack accuracy: {final_accuracy}\nNumber of generations: {generations+1}\n")
+        log.write(f"Best genome: {population.genomes[0]}\n\n")
+
+        if generate_individual_graph:
+            plt.plot(accuracies, "o-r")
+            plt.title(f"PUF: Length of {puf_length} and k{k}. ES: Population size of {population_size}.")
+            plt.ylabel("accuracy")
+            plt.xlabel("generation")
+            plt.show()
+
+    # Stop timer
+    overall_end_time = time.time()
+
+    # Calculate average accuracy over all attacks
+    average_accuracy = np.mean(final_accuracies)
+
+    # Final log
+    log.write(f"\nAttacks concluded.\nAccuracies over all attacks: {final_accuracies}\n")
+    log.write(f"Time taken: {overall_end_time - overall_start_time} sec\nAverage accuracy: {average_accuracy}\n")
     log.close()
 
-    plt.plot(accuracies, "o-r")
-    plt.title(f"PUF: Length of {puf_length} and k{k}. ES: Population size of {population_size}.")
-    plt.ylabel("accuracy")
-    plt.xlabel("generation")
-    plt.show()
+    if generate_final_graph and len(final_accuracies) > 1:
+        plt.plot(final_accuracies, "o-r")
+        plt.title(f"Accuracies over all attacks. Average accuracy: {average_accuracy}.")
+        plt.ylabel("accuracy")
+        plt.xlabel("attack")
+        plt.show()
 
 
 # noinspection DuplicatedCode
