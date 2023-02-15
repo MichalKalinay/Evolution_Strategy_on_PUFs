@@ -34,7 +34,7 @@ def main(
     # Functions to be used in evolutions
     fitness_func=fitness.fitness,
     selection_func=selection.select_pair,
-    crossover_func=crossover.single_point_crossover,
+    crossover_func=crossover.single_point_average,
     mutation_func=mutation.mutation_function,
 
     # ES Parameters
