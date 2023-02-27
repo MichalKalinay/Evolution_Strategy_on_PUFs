@@ -101,6 +101,6 @@ def random_average(parent1: Genome, parent2: Genome) -> Tuple[Genome, Genome]:
 
         # Average all the indices
         for i in indices:
-            genome.set_value_at_index(i, (parent1.values[i] + parent2.values[2]) / 2)
+            genome.set_value_at_index(i, (parent1.values[i] + parent2.values[i]) / 2)
 
     return averaged_genome1, averaged_genome2
