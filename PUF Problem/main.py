@@ -129,6 +129,7 @@ def main(
 
     # Final log
     log.write(f"\nAttacks concluded.\nAccuracies over all attacks: {final_accuracies}\n")
+    log.write(f"Max accuracy: {max(final_accuracies)}")
     log.write(f"Time taken: {overall_end_time - overall_start_time} sec\nAverage accuracy: {average_accuracy}\n")
     log.close()
 
