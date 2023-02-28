@@ -35,7 +35,7 @@ def main(
     fitness_func=fitness.fitness,
     selection_func=selection.select_pair,
     crossover_func=crossover.single_point_average,
-    mutation_func=mutation.mutation_function,
+    mutation_func=mutation.new_value,
 
     # ES Parameters
     population_size=50,
