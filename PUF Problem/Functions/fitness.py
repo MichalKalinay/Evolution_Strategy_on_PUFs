@@ -12,7 +12,6 @@ def fitness(genome: Genome, crps: List[np.array]) -> int:
         # Separate challenges and true responses
         challenge = crp[0]
         response = crp[1]
-        # TODO Check if correct
         # Calculate responses of genome using a dot product over its values and challenges. Take the sign of that.
         genome_response = int(np.sign(np.array(challenge).dot(genome.values)))
         if genome_response == response:
