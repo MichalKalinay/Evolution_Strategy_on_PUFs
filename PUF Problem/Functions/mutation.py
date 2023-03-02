@@ -26,7 +26,7 @@ def deviate_constant(genome: Genome, mutations: int = 1, probability: float = 0.
         deviation = 0.5
         # Add / subtract the deviation from the float at the index
         if random() <= probability:
-            if random.uniform(0, 1) > 0.5:
+            if random() > 0.5:
                 genome.set_value_at_index(index, genome.values[index] + deviation)
             else:
                 genome.set_value_at_index(index, genome.values[index] - deviation)
@@ -57,7 +57,7 @@ def deviate_percentage(genome: Genome, mutations: int = 1, probability: float = 
         deviation = 0.5
         # Multiply / divide the float with the deviation at the index
         if random() <= probability:
-            if random.uniform(0, 1) > 0.5:
+            if random() > 0.5:
                 genome.set_value_at_index(index, genome.values[index] * deviation)
             else:
                 genome.set_value_at_index(index, genome.values[index] / deviation)
