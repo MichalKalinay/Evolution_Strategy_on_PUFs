@@ -41,7 +41,7 @@ def main(
     population_size=50,
     fitness_limit=0.9,
     generation_limit=30,
-    crps_per_generation=2000,
+    crps_per_generation=1000,
 
     # General / Print Parameters
     # It is recommended to disable individual graph generation if running more than 1 attack
@@ -128,9 +128,9 @@ def main(
     average_accuracy = np.mean(final_accuracies)
 
     # Final log
-    log.write(f"\nAttacks concluded.\nAccuracies over all attacks: {final_accuracies}\n")
-    log.write(f"Max accuracy: {max(final_accuracies)}")
-    log.write(f"Time taken: {overall_end_time - overall_start_time} sec\nAverage accuracy: {average_accuracy}\n")
+    log.write(f"\nAttacks concluded.\nTime taken: {overall_end_time - overall_start_time} sec\n")
+    log.write(f"Accuracies over all attacks: {final_accuracies}\nMax accuracy: {max(final_accuracies)}\n")
+    log.write(f"Average accuracy: {average_accuracy}\n")
     log.close()
 
     if generate_final_graph and len(final_accuracies) > 1:
