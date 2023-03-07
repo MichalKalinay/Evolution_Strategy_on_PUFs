@@ -39,9 +39,9 @@ def main(
 
     # ES Parameters
     population_size=50,
-    fitness_limit=0.9,
+    fitness_limit=0.95,
     generation_limit=30,
-    crps_per_generation=1000,
+    crps_per_generation=2000,
 
     # General / Print Parameters
     # It is recommended to disable individual graph generation if running more than 1 attack
@@ -85,11 +85,11 @@ def main(
         ones = np.ones((len(challenges_pre_trans), 1))
         challenges = np.hstack((challenges_transformed, ones))
 
-        # Zipping of crps so later a batch for each generation can be randomly selected
+        # Zipping of CRPs so later a batch for each generation can be randomly selected
         zip_challenge_response = list(zip(challenges, responses))
 
         # Run The Evolution
-        population, generations, accuracies = run_evolution(
+        best_genome, generations, accuracies = run_evolution(
             crps=zip_challenge_response,
             genome_length=puf_length,
 
@@ -103,16 +103,16 @@ def main(
             generation_limit=generation_limit,
             crps_per_generation=crps_per_generation
         )
-        final_accuracy = fitness.fitness(population.genomes[0], zip_challenge_response) / number_of_challenges
+        final_accuracy = fitness.fitness(best_genome, zip_challenge_response) / number_of_challenges
         final_accuracies.append(final_accuracy)
 
         print(f"Number of generations: {generations+1}")
-        print(f"Best solution: {population.genomes[0]}")
+        print(f"Best solution: {best_genome}")
         print(f"And its accuracy: {final_accuracy}")
 
         log.write(f"Results of attack {i+1}:\nAccuracies over time: {accuracies}\n")
         log.write(f"Final attack accuracy: {final_accuracy}\nNumber of generations: {generations+1}\n")
-        log.write(f"Best genome: {population.genomes[0]}\n\n")
+        log.write(f"Best genome: {best_genome}\n\n")
 
         if generate_individual_graph:
             plt.plot(accuracies, "o-r")
@@ -158,17 +158,21 @@ def run_evolution(
         # Limits the amount of generations this function will run in case fitness limit is not reached
         generation_limit=50,
         crps_per_generation=2000
-) -> Tuple[Population, int, List[float]]:
+) -> Tuple[Genome, int, List[float]]:
     start_time = time.time()
+    # Initialize Population
     population = Population(population_size, genome_length+1)
+    # Array to keep track of the best fitness
     best_fitness_over_time = []
+    # Array to keep track of the best genomes to prevent losing good ones
+    best_genomes_over_time = []
 
     for i in range(generation_limit):
         generation_start_time = time.time()
         print(f"Running generation {i} ... ", end="")
 
         # Generate challenge-response-pairs to be used for this generation
-        crps_generation = random.choices(crps, k=crps_per_generation)
+        crps_generation = random.sample(crps, crps_per_generation)
 
         # Sort the population by fitness
         population.genomes = sorted(
@@ -191,6 +195,10 @@ def run_evolution(
         next_generation = Population(0, 0)
         # Top 2 solutions are kept for next generation as is (elitism)
         next_generation.add_genomes(population.genomes[0:2])
+
+        # Save the best performing genome in the second half of the attack
+        if i > int(generation_limit/2):
+            best_genomes_over_time.append(population.genomes[0])
 
         # Go through half the population since there's 2 parents. One pair is already kept as elites
         for j in range(int(len(population.genomes) / 2) - 1):
@@ -219,11 +227,24 @@ def run_evolution(
         reverse=True
     )
 
+    # Sort saved Genomes for return
+    best_genomes_over_time = sorted(
+        best_genomes_over_time,
+        key=lambda genome: fitness_func(genome, crps),
+        # Best fitness is at the start
+        reverse=True
+    )
+
+    if (fitness_func(best_genomes_over_time[0], crps) / len(crps)) > (fitness_func(population.genomes[0], crps) / len(crps)):
+        best_genome = best_genomes_over_time[0]
+    else:
+        best_genome = population.genomes[0]
+
     end_time = time.time()
 
     # Return population and index to distinguish termination by fitness limit or generation limit
     print(f"... done! Processing time of: {end_time - start_time} sec")
-    return population, i, best_fitness_over_time
+    return best_genome, i, best_fitness_over_time
 
 
 if __name__ == '__main__':
